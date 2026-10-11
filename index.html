@@ -1,0 +1,428 @@
+<title>Café or Padel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow column — scenario switch, four option cards, then tabbed inputs. Zurich tram blue for the café, court green for padel. */
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --fg: #15222c;
+  --muted: #5a6a77;
+  --line: #d9e1e7;
+  --chip: #e8eef3;
+  --zh: #0a5aa8;
+  --court: #1d7651;
+  --good: #1d7a3e;
+  --warn: #9a5c00;
+  --bad: #b3261e;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f161c; --surface: #17212a; --fg: #e5ecf2; --muted: #93a3b0; --line: #2a3743; --chip: #1f2b36;
+    --zh: #63aef2; --court: #4fc28c; --good: #5cc985; --warn: #e2a64f; --bad: #f2786f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f161c; --surface: #17212a; --fg: #e5ecf2; --muted: #93a3b0; --line: #2a3743; --chip: #1f2b36;
+  --zh: #63aef2; --court: #4fc28c; --good: #5cc985; --warn: #e2a64f; --bad: #f2786f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-inline: 16px; padding-block: 20px 48px;
+}
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 24px; }
+h1, h2, h3 { font-family: var(--display); font-stretch: 80%; text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(30px, 6vw, 44px); font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: 22px; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 700; font-stretch: 90%; }
+p { margin: 0; max-width: 65ch; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.num { font-variant-numeric: tabular-nums; }
+header { display: grid; gap: 8px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+/* Segmented controls */
+.seg { display: inline-flex; background: var(--chip); border-radius: 10px; padding: 3px; gap: 3px; flex-wrap: wrap; }
+.seg button {
+  font: 600 14px var(--body); color: var(--muted); background: transparent; border: 0;
+  padding: 7px 14px; border-radius: 8px; cursor: pointer;
+}
+.seg button[aria-pressed="true"], .seg button[aria-selected="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--zh); outline-offset: 2px; }
+.bar-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+
+/* Option cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card .tag { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.card.zh .tag { color: var(--zh); }
+.card.court .tag { color: var(--court); }
+.card.job .tag { color: var(--muted); }
+.big { font-family: var(--display); font-size: 30px; font-weight: 800; font-stretch: 85%; font-variant-numeric: tabular-nums; line-height: 1; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 13.5px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
+.pill { justify-self: start; font-size: 12.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor; }
+.pill.good { color: var(--good); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); }
+.pos { color: var(--good); } .neg { color: var(--bad); }
+
+/* Income bars */
+.bars { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
+.brow { display: grid; grid-template-columns: minmax(120px, 170px) 1fr; gap: 10px; align-items: center; font-size: 13.5px; }
+.track { position: relative; height: 22px; background: var(--chip); border-radius: 5px; overflow: hidden; }
+.fill { position: absolute; inset: 0 auto 0 0; border-radius: 5px; }
+.fill.zh { background: var(--zh); } .fill.court { background: var(--court); } .fill.job { background: var(--muted); }
+.track span { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.living { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--fg); opacity: .55; }
+
+/* Tabs + inputs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tabs button {
+  font: 600 14px var(--body); color: var(--muted); background: none; border: 0; border-bottom: 2px solid transparent;
+  padding: 10px 12px; cursor: pointer; white-space: nowrap;
+}
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--fg); }
+.panel { display: grid; gap: 18px; padding-top: 16px; }
+.group { display: grid; gap: 10px; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.field { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; min-width: 0; }
+.field label { font-size: 13.5px; font-weight: 600; }
+.field .row { display: flex; align-items: center; gap: 8px; }
+.field input {
+  width: 100%; min-width: 0; font: 500 16px var(--body); font-variant-numeric: tabular-nums;
+  color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px;
+}
+.field .unit { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.field .note { font-size: 12.5px; color: var(--muted); }
+.src { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+.src.research { color: var(--good); border: 1px solid currentColor; }
+.src.guess { color: var(--warn); border: 1px dashed currentColor; }
+.flabel { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+tr.total td { font-weight: 700; border-bottom: 0; }
+.explain { background: var(--chip); border-radius: 10px; padding: 12px 14px; font-size: 14px; display: grid; gap: 6px; }
+.sources { display: grid; gap: 6px; padding-left: 18px; margin: 0; }
+.sources a { color: var(--zh); }
+.reset { font: 600 13px var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+@media (max-width: 480px) {
+  .brow { grid-template-columns: 1fr; gap: 4px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fill { transition: width .25s ease; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Planning tool · all amounts in CHF</div>
+    <h1>Café or Padel</h1>
+    <p class="muted">A small sit-down coffee shop in Zurich run by the two of you, or 2–3 padel courts in Tirana with a partner. Change any number below and every result updates. Numbers marked <span class="src guess">Guess</span> need checking with real quotes.</p>
+  </header>
+
+  <section class="group" aria-labelledby="ov">
+    <div class="bar-row">
+      <h2 id="ov">How each option looks in a</h2>
+      <div class="seg" role="group" aria-label="Month type" id="scen">
+        <button type="button" data-s="bad">Bad month</button>
+        <button type="button" data-s="normal" aria-pressed="true">Normal month</button>
+        <button type="button" data-s="good">Good month</button>
+      </div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section class="bars" aria-labelledby="bh">
+    <div class="bar-row">
+      <h3 id="bh">Money your household has each month, after business tax</h3>
+      <span class="small muted">Dark line = your living costs</span>
+    </div>
+    <div id="bars" class="group"></div>
+  </section>
+
+  <section>
+    <div class="tabs" role="tablist" id="tabs">
+      <button type="button" role="tab" data-t="cafe" aria-selected="true">Zurich café</button>
+      <button type="button" role="tab" data-t="padel" aria-selected="false">Padel Tirana</button>
+      <button type="button" role="tab" data-t="life" aria-selected="false">Budget &amp; life</button>
+      <button type="button" role="tab" data-t="how" aria-selected="false">How to read this</button>
+    </div>
+
+    <div class="panel" id="p-cafe" role="tabpanel">
+      <div class="group"><h3>Same for both café locations</h3><div class="fields" id="f-cafe"></div></div>
+      <div class="group"><h3>Kreis 1 (Altstadt, Niederdorf, near Bahnhofstrasse)</h3><div class="fields" id="f-k1"></div></div>
+      <div class="group"><h3>Just outside the centre (Seefeld, Kreis 4/5, Oerlikon)</h3><div class="fields" id="f-out"></div></div>
+      <div class="group"><h3>Month by month: Kreis 1</h3><div class="tablewrap" id="t-k1"></div></div>
+      <div class="group"><h3>Month by month: outside the centre</h3><div class="tablewrap" id="t-out"></div></div>
+    </div>
+
+    <div class="panel" id="p-padel" role="tabpanel" hidden>
+      <div class="group"><h3>Building the club (in euros)</h3><div class="fields" id="f-pbuild"></div></div>
+      <div class="group"><h3>Running the club (in euros)</h3><div class="fields" id="f-prun"></div></div>
+      <div class="group"><h3>Month by month: your share</h3><div class="tablewrap" id="t-padel"></div></div>
+    </div>
+
+    <div class="panel" id="p-life" role="tabpanel" hidden>
+      <div class="group"><h3>Your money and your household</h3><div class="fields" id="f-life"></div></div>
+      <div class="bar-row"><span class="small muted">Your changes are saved in this browser only.</span><button type="button" class="reset" id="reset">Reset to starting numbers</button></div>
+    </div>
+
+    <div class="panel" id="p-how" role="tabpanel" hidden>
+      <div class="explain">
+        <strong>Household income</strong>
+        <span>What the two of you have each month. For the café, that's the café's profit after tax: it's your salary, because you both work there. For padel, it's your normal job pay plus your share of the club's profit, because the partner runs the club and you keep working in Zurich.</span>
+      </div>
+      <div class="explain">
+        <strong>Extra vs normal jobs</strong>
+        <span>How much more (or less) you earn than if you both had normal jobs. This is the fair way to judge the café, since running it means giving up those jobs.</span>
+      </div>
+      <div class="explain">
+        <strong>Months to earn back</strong>
+        <span>Money you invest ÷ the extra you earn each month. If the extra is zero or negative, you never earn the investment back.</span>
+      </div>
+      <div class="explain">
+        <strong>Reserve</strong>
+        <span>Whatever is left of your budget after setup. If your household income is lower than your living costs, the reserve pays the difference, and the card shows how many months it lasts.</span>
+      </div>
+      <div class="group">
+        <h3>Where the starting numbers come from</h3>
+        <ul class="sources small">
+          <li>Cappuccino around CHF 6 in Zurich: <a href="https://www.combien-coute.net/cappuccino/suisse/zurich/" target="_blank" rel="noopener">combien-coute.net</a>, <a href="https://www.bluewin.ch/en/news/a-cup-of-coffee-here-costs-even-more-than-in-zurich-3120016.html" target="_blank" rel="noopener">blue News</a></li>
+          <li>Kreis 1 shop rents (80 m² in Niederdorf at CHF 7,270/month): <a href="https://www.comparis.ch/immobilien/marktplatz/zuerich/kreis-1/mieten?page=7" target="_blank" rel="noopener">Comparis listings</a></li>
+          <li>Café takeovers (Oerlikon about CHF 50k fee with CHF 3,666 rent; Seefeld CHF 2,900 rent; Kreis 2 CHF 495k fee): <a href="https://www.comparis.ch/immobilien/marktplatz/details/show/37316263" target="_blank" rel="noopener">Comparis</a>, <a href="https://www.comparis.ch/immobilien/marktplatz/details/show/37607493" target="_blank" rel="noopener">Comparis</a></li>
+          <li>Zurich city minimum wage CHF 23.90/hour (start date not yet confirmed): <a href="https://www.bluewin.ch/en/news/international/minimum-wage-comes-to-zurich-and-winterthur-3273157.html" target="_blank" rel="noopener">blue News</a></li>
+          <li>Café permits are handled by the Stadtpolizei Zürich "Bewilligung Gastro" team: <a href="https://opendata.swiss/en/dataset/gastwirtschaftsbetriebe" target="_blank" rel="noopener">opendata.swiss</a></li>
+          <li>Padel court build costs: <a href="https://sportsvenuecalculator.com/knowledge/padel-courts/padel-court-construction-cost/" target="_blank" rel="noopener">Sports Venue Calculator</a>, <a href="https://www.padelbrowser.com/blog/how-much-does-it-cost-to-build-a-padel-court" target="_blank" rel="noopener">Padel Browser</a></li>
+          <li>Tirana clubs and prices (700 lekë/hour youth-card rate): <a href="https://eyca.org/discounts/c95020231218102550742957" target="_blank" rel="noopener">EYCA</a>, <a href="https://playtomic.com/clubs/albania-padel-group" target="_blank" rel="noopener">Playtomic</a>, <a href="https://padellands.com/en/pistas-de-padel/europa/albania/" target="_blank" rel="noopener">Padellands</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// Every number the calculator uses. src: "research" = found online, "guess" = estimate to check.
+const FIELDS = {
+  life: [
+    { id: "budget", label: "Total budget", unit: "CHF", v: 200000, src: "research", note: "The amount you told me. Change it if it's in euros." },
+    { id: "living", label: "Your household living costs", unit: "CHF / month", v: 5500, src: "guess", note: "Rent, food, health insurance, transport for two in Zurich." },
+    { id: "jobs", label: "What you'd both earn in normal jobs", unit: "CHF / month, after tax", v: 9000, src: "guess", note: "Put in your real or expected take-home pay." },
+    { id: "fx", label: "Exchange rate: 1 euro =", unit: "CHF", v: 0.94, step: 0.01, src: "guess", note: "Check today's rate." },
+  ],
+  cafe: [
+    { id: "spend", label: "Average spend per customer", unit: "CHF", v: 10, step: 0.5, src: "research", note: "Cappuccino about CHF 6, plus a pastry about CHF 4 (pastry is a guess)." },
+    { id: "ingr", label: "Coffee, milk & pastries cost", unit: "% of sales", v: 30, src: "guess", note: "Pastries bought fresh from a bakery each day." },
+    { id: "days", label: "Days open per month", unit: "days", v: 26, src: "guess", note: "Six days a week." },
+    { id: "other", label: "Other monthly costs", unit: "CHF / month", v: 2500, src: "guess", note: "Electricity, insurance, card fees, accountant, till system." },
+    { id: "equip", label: "Equipment & renovation", unit: "CHF, one time", v: 40000, src: "guess", note: "Espresso machine CHF 10–25k, grinder, fridges, furniture, signage." },
+    { id: "hours", label: "Hours each of you works", unit: "hours / week", v: 55, src: "guess", note: "Opening hours plus prep, cleaning and admin." },
+    { id: "ctax", label: "Tax & social insurance", unit: "% of profit", v: 20, src: "guess", note: "Rough figure. Ask a Zurich accountant (Treuhänder)." },
+  ],
+  k1: [
+    { id: "k1_rent", label: "Rent", unit: "CHF / month", v: 8000, src: "research", note: "An 80 m² Niederdorf shop was listed at CHF 7,270." },
+    { id: "k1_fee", label: "Takeover fee (Ablöse)", unit: "CHF, one time", v: 120000, src: "guess", note: "Listings range from CHF 49k to 495k. Prime spots cost most." },
+    { id: "k1_bad", label: "Customers per day: bad month", unit: "people", v: 90, src: "guess" },
+    { id: "k1_normal", label: "Customers per day: normal month", unit: "people", v: 170, src: "guess" },
+    { id: "k1_good", label: "Customers per day: good month", unit: "people", v: 250, src: "guess" },
+  ],
+  out: [
+    { id: "out_rent", label: "Rent", unit: "CHF / month", v: 3500, src: "research", note: "Oerlikon listing CHF 3,666; Seefeld CHF 2,900." },
+    { id: "out_fee", label: "Takeover fee (Ablöse)", unit: "CHF, one time", v: 55000, src: "research", note: "Oerlikon café listed at CHF 49–55k." },
+    { id: "out_bad", label: "Customers per day: bad month", unit: "people", v: 60, src: "guess" },
+    { id: "out_normal", label: "Customers per day: normal month", unit: "people", v: 120, src: "guess" },
+    { id: "out_good", label: "Customers per day: good month", unit: "people", v: 180, src: "guess" },
+  ],
+  pbuild: [
+    { id: "courts", label: "Number of courts", unit: "courts", v: 3, src: "research", note: "Your plan: 2–3." },
+    { id: "court_cost", label: "Cost per court, installed", unit: "€", v: 35000, src: "research", note: "Guides: about $20–25k basic, up to $100k+ panoramic." },
+    { id: "roof", label: "Roof / covered structure", unit: "€, one time", v: 80000, src: "guess", note: "Lets you play through rain and summer heat. Set to 0 for outdoor." },
+    { id: "extras", label: "Ground work, lights, reception, permits", unit: "€, one time", v: 25000, src: "guess" },
+    { id: "share", label: "Your ownership share", unit: "%", v: 50, src: "guess", note: "Agree this in writing with your partner." },
+  ],
+  prun: [
+    { id: "price", label: "Price per court per hour", unit: "€", v: 26, src: "research", note: "Estimate: 700 lekë per player × 4 players. Check Playtomic." },
+    { id: "pbad", label: "Hours booked per court per day: bad month", unit: "hours", v: 3, src: "guess" },
+    { id: "pnormal", label: "Hours booked per court per day: normal month", unit: "hours", v: 6, src: "guess" },
+    { id: "pgood", label: "Hours booked per court per day: good month", unit: "hours", v: 9, src: "guess", note: "Clubs are often open 08:00–23:00, so 15 hours." },
+    { id: "pdays", label: "Days open per month", unit: "days", v: 30, src: "guess" },
+    { id: "land", label: "Land rent", unit: "€ / month", v: 1500, src: "guess" },
+    { id: "staff", label: "Staff", unit: "€ / month", v: 1800, src: "guess", note: "Reception and cleaning. The partner manages." },
+    { id: "power", label: "Electricity & maintenance", unit: "€ / month", v: 900, src: "guess" },
+    { id: "ptax", label: "Albanian business tax", unit: "% of profit", v: 15, src: "guess", note: "Confirm with an Albanian accountant." },
+  ],
+};
+
+const STORE = "cafe-or-padel-v1";
+const values = {};
+for (const g of Object.values(FIELDS)) for (const f of g) values[f.id] = f.v;
+try { Object.assign(values, JSON.parse(localStorage.getItem(STORE) || "{}")); } catch (e) {}
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(values)); } catch (e) {} };
+const v = id => Number(values[id]) || 0;
+
+const chf = n => (n < 0 ? "−" : "") + "CHF " + Math.round(Math.abs(n)).toLocaleString("de-CH");
+const months = m => m == null ? "Never" : m < 1 ? "Under 1 month" : Math.ceil(m) + " months";
+
+function cafe(loc, s) {
+  const cust = v(loc + "_" + s);
+  const sales = cust * v("spend") * v("days");
+  const ingr = sales * v("ingr") / 100, rent = v(loc + "_rent"), other = v("other");
+  const pre = sales - ingr - rent - other;
+  const tax = pre > 0 ? pre * v("ctax") / 100 : 0;
+  const net = pre - tax;
+  const invest = v(loc + "_fee") + v("equip");
+  const household = net;
+  return finish({ cust, sales, ingr, rent, other, pre, tax, net, invest, household, extra: household - v("jobs"),
+    perHour: net / (2 * v("hours") * 4.33) });
+}
+
+function padel(s) {
+  const fx = v("fx"), share = v("share") / 100;
+  const hrs = v("p" + s);
+  const setup = v("courts") * v("court_cost") + v("roof") + v("extras");
+  const rev = v("courts") * hrs * v("price") * v("pdays");
+  const cost = v("land") + v("staff") + v("power");
+  const pre = rev - cost;
+  const tax = pre > 0 ? pre * v("ptax") / 100 : 0;
+  const clubNet = pre - tax;
+  const yours = clubNet * share * fx;
+  return finish({ hrs, setupEur: setup, revEur: rev, costEur: cost, taxEur: tax, clubNetEur: clubNet,
+    yours, invest: setup * share * fx, household: v("jobs") + yours, extra: yours });
+}
+
+function jobs() { return finish({ invest: 0, household: v("jobs"), extra: 0 }); }
+
+function finish(r) {
+  r.reserve = v("budget") - r.invest;
+  r.payback = r.extra > 0 && r.invest > 0 ? r.invest / r.extra : (r.invest === 0 ? 0 : null);
+  const gap = v("living") - r.household;
+  r.reserveMonths = gap > 0 ? Math.max(0, r.reserve) / gap : Infinity;
+  return r;
+}
+
+function status(r) {
+  if (r.reserve < 0) return ["bad", "Over budget by " + chf(-r.reserve)];
+  if (r.reserveMonths === Infinity) return ["good", "Covers your living costs"];
+  if (r.reserveMonths < 12) return ["bad", "Reserve runs out in " + Math.max(0, Math.floor(r.reserveMonths)) + " months"];
+  return ["warn", "Reserve covers the gap for " + Math.floor(r.reserveMonths) + " months"];
+}
+
+let scen = "normal";
+try { scen = localStorage.getItem(STORE + "-scen") || "normal"; } catch (e) {}
+
+function render() {
+  const opts = [
+    { key: "k1", name: "Café · Kreis 1", cls: "zh", r: cafe("k1", scen) },
+    { key: "out", name: "Café · outside centre", cls: "zh", r: cafe("out", scen) },
+    { key: "padel", name: "Padel · Tirana", cls: "court", r: padel(scen) },
+    { key: "jobs", name: "Both in normal jobs", cls: "job", r: jobs() },
+  ];
+
+  document.getElementById("cards").innerHTML = opts.map(o => {
+    const r = o.r, [sc, st] = status(r);
+    const extraCls = r.extra > 0 ? "pos" : r.extra < 0 ? "neg" : "";
+    const lines = [
+      ["Extra vs normal jobs", `<span class="${extraCls}">${r.extra > 0 ? "+" : ""}${chf(r.extra)}</span>`],
+      ["You invest", chf(r.invest)],
+      ["Months to earn back", o.key === "jobs" ? "—" : months(r.payback)],
+      ["Reserve left", chf(r.reserve)],
+    ];
+    if (o.key !== "padel" && o.key !== "jobs") lines.splice(1, 0, ["Each of you earns", chf(r.perHour) + " / hour"]);
+    if (o.key === "padel") lines.splice(1, 0, ["Your share of club profit", chf(r.yours)]);
+    return `<article class="card ${o.cls}">
+      <div class="tag">${o.name}</div>
+      <div><div class="big">${chf(r.household)}</div><div class="small muted">household income / month</div></div>
+      <dl class="kv">${lines.map(([k, val]) => `<dt>${k}</dt><dd>${val}</dd>`).join("")}</dl>
+      <span class="pill ${sc}">${st}</span>
+    </article>`;
+  }).join("");
+
+  const max = Math.max(v("living"), ...opts.map(o => o.r.household), 1);
+  document.getElementById("bars").innerHTML = opts.map(o => {
+    const h = o.r.household, w = Math.max(0, h) / max * 100;
+    return `<div class="brow"><span>${o.name}</span>
+      <div class="track"><div class="fill ${o.cls}" style="width:${w}%"></div>
+      <div class="living" style="left:${v("living") / max * 100}%"></div>
+      <span class="${h < 0 ? "neg" : ""}">${chf(h)}</span></div></div>`;
+  }).join("");
+
+  const S = ["bad", "normal", "good"];
+  const head = `<thead><tr><th></th><th>Bad</th><th>Normal</th><th>Good</th></tr></thead>`;
+  const row = (label, f, cls = "") => `<tr class="${cls}"><td>${label}</td>${S.map(s => `<td>${f(s)}</td>`).join("")}</tr>`;
+  for (const loc of ["k1", "out"]) {
+    const R = Object.fromEntries(S.map(s => [s, cafe(loc, s)]));
+    document.getElementById("t-" + loc).innerHTML = `<table>${head}<tbody>
+      ${row("Customers per day", s => R[s].cust)}
+      ${row("Sales", s => chf(R[s].sales))}
+      ${row("Coffee, milk & pastries", s => chf(-R[s].ingr))}
+      ${row("Rent", s => chf(-R[s].rent))}
+      ${row("Other costs", s => chf(-R[s].other))}
+      ${row("Tax & social insurance", s => chf(-R[s].tax))}
+      ${row("Left for you two", s => chf(R[s].net), "total")}
+    </tbody></table>`;
+  }
+  const P = Object.fromEntries(S.map(s => [s, padel(s)]));
+  const eur = n => (n < 0 ? "−" : "") + "€ " + Math.round(Math.abs(n)).toLocaleString("de-CH");
+  document.getElementById("t-padel").innerHTML = `<table>${head}<tbody>
+    ${row("Hours booked per court per day", s => P[s].hrs + " of 15")}
+    ${row("Court bookings", s => eur(P[s].revEur))}
+    ${row("Land, staff, electricity", s => eur(-P[s].costEur))}
+    ${row("Business tax", s => eur(-P[s].taxEur))}
+    ${row("Club profit", s => eur(P[s].clubNetEur))}
+    ${row("Your share, in CHF", s => chf(P[s].yours), "total")}
+  </tbody></table>`;
+}
+
+function buildFields() {
+  for (const [group, list] of Object.entries(FIELDS)) {
+    const el = document.getElementById("f-" + group);
+    el.innerHTML = list.map(f => `<div class="field">
+      <div class="flabel"><label for="in-${f.id}">${f.label}</label>
+        <span class="src ${f.src}">${f.src === "research" ? "Research" : "Guess"}</span></div>
+      <div class="row"><input id="in-${f.id}" type="number" inputmode="decimal" step="${f.step || "any"}" value="${values[f.id]}" data-id="${f.id}"><span class="unit">${f.unit}</span></div>
+      ${f.note ? `<div class="note">${f.note}</div>` : ""}
+    </div>`).join("");
+  }
+}
+
+document.addEventListener("input", e => {
+  const id = e.target.dataset && e.target.dataset.id;
+  if (!id) return;
+  values[id] = e.target.value === "" ? 0 : Number(e.target.value);
+  save(); render();
+});
+
+document.getElementById("scen").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  scen = b.dataset.s;
+  try { localStorage.setItem(STORE + "-scen", scen); } catch (err) {}
+  syncScen(); render();
+});
+function syncScen() {
+  document.querySelectorAll("#scen button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === scen)));
+}
+
+document.getElementById("tabs").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  document.querySelectorAll("#tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+  for (const t of ["cafe", "padel", "life", "how"]) document.getElementById("p-" + t).hidden = t !== b.dataset.t;
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  for (const g of Object.values(FIELDS)) for (const f of g) values[f.id] = f.v;
+  save(); buildFields(); render();
+});
+
+buildFields(); syncScen(); render();
+</script>
